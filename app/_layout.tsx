@@ -11,10 +11,33 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
+import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import { NotificationProvider } from "@/context/NotificationContext";
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
+const BACKGROUND_NOTIFICATION_TASK = "BACKGROUND-NOTIFICATION-TASK";
 
+TaskManager.defineTask(
+  BACKGROUND_NOTIFICATION_TASK,
+  ({ data, error, executionInfo }) => {
+    console.log("✅ Received a notification in the background!", {
+      data,
+      error,
+      executionInfo,
+    });
+    // Do something with the notification data
+  }
+);
 
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -36,6 +59,7 @@ export default function RootLayout() {
   }
 
   return (
+    <NotificationProvider>
       <ReservationProvider>
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
@@ -83,5 +107,6 @@ export default function RootLayout() {
           <StatusBar style="auto" />
         </ThemeProvider>
       </ReservationProvider>
+    </NotificationProvider>
   );
 }
